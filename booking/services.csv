@@ -1,0 +1,5 @@
+id,shop_id,name,description,price,duration_minutes,is_active,created_at,updated_at
+4df9480f-28e6-4f8d-a073-6a5e434d0140,5bd6b4c3-d7bc-4125-b4c1-2face3fbe17f,Beard Trim,Professional beard trimming,1500,15,true,2025-06-27 12:21:07.364892+00,2025-06-27 12:21:07.364892+00
+6aecae6a-afd6-482e-bbfd-124196a26d4b,5bd6b4c3-d7bc-4125-b4c1-2face3fbe17f,Basic Haircut for kids,Standard mens haircut,2500,30,true,2025-06-27 15:41:21.805749+00,2025-06-27 15:41:21.805756+00
+9d70539d-ec3a-437f-a958-10be8802b22b,5bd6b4c3-d7bc-4125-b4c1-2face3fbe17f,Basic Haircut,Standard mens haircut,2000,30,true,2025-06-27 12:21:07.364892+00,2025-06-27 16:40:54.319697+00
+f225036c-fe79-48dc-bde2-d6cb441b4df9,5bd6b4c3-d7bc-4125-b4c1-2face3fbe17f,Haircut + Beard,Complete grooming package,3500,45,true,2025-06-27 12:21:07.364892+00,2025-06-27 12:21:07.364892+00

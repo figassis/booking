@@ -1,0 +1,4 @@
+id,name,address,phone,email,timezone,created_at,updated_at
+1a2fd192-5074-42d5-91dc-398c95a62936,New shop 3,Some other address,+1-555-0123,info@downtowncuts.com,UTC,2025-06-27 15:33:33.219112+00,2025-06-27 16:34:38.409192+00
+5bd6b4c3-d7bc-4125-b4c1-2face3fbe17f,Downtown Cuts,"123 Main St, City, State",+1-555-0123,info@downtowncuts.com,UTC,2025-06-27 12:21:07.364536+00,2025-06-27 12:21:07.364536+00
+77cb3871-17c0-4923-974d-1934ab14f5bb,Uptown Barbershop,"456 Oak Ave, City, State",+1-555-0456,contact@uptownbarber.com,UTC,2025-06-27 12:21:07.364536+00,2025-06-27 12:21:07.364536+00
