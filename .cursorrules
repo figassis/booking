@@ -1,0 +1,248 @@
+# Barber Booking SaaS API - Cursor Rules
+
+## Project Overview
+Building a Python API for a barber booking SaaS platform. Focus on simplicity, maintainability, and clean code.
+You should always look at README.md for reference on application structure.
+
+## Technology Stack
+- **Framework**: FastAPI (async/await support, automatic OpenAPI docs)
+- **Database**: PostgreSQL with asyncpg
+- **ORM**: SQLAlchemy 2.0+ with async support
+- **Validation**: Pydantic v2
+- **Authentication**: JWT tokens
+- **Testing**: pytest with pytest-asyncio
+- **Environment**: python-dotenv for config
+
+## Project Structure
+```
+app/
+├── main.py                 # FastAPI app initialization
+├── config.py              # Configuration settings
+├── database.py            # Database connection and session
+├── models/                # SQLAlchemy models
+│   ├── __init__.py
+│   ├── shop.py
+│   ├── barber.py
+│   ├── service.py
+│   └── appointment.py
+├── schemas/               # Pydantic schemas
+│   ├── __init__.py
+│   ├── shop.py
+│   ├── barber.py
+│   └── appointment.py
+├── api/                   # API routes
+│   ├── __init__.py
+│   ├── shops.py
+│   ├── barbers.py
+│   ├── services.py
+│   └── appointments.py
+├── services/              # Business logic
+│   ├── __init__.py
+│   ├── booking_service.py
+│   └── availability_service.py
+└── utils/                 # Utilities
+    ├── __init__.py
+    └── helpers.py
+```
+
+## Coding Guidelines
+
+### General Principles
+- **Simplicity over cleverness** - Write code that's easy to understand
+- **Single Responsibility** - Each function/class should do one thing well
+- **DRY but not at the expense of clarity** - Don't abstract too early
+- **Explicit is better than implicit** - Clear naming and obvious intent
+- **Fail fast** - Validate inputs early, raise clear exceptions
+
+### Python Style
+- Follow PEP 8 with line length of 88 characters (Black formatter)
+- Use type hints everywhere: `def get_user(user_id: UUID) -> User:`
+- Use descriptive variable names: `appointment_date` not `dt`
+- Prefer f-strings for string formatting
+- Use dataclasses or Pydantic models instead of dictionaries for structured data
+
+### FastAPI Patterns
+```python
+# Good: Clear, simple endpoint
+@router.get("/shops/{shop_id}/barbers", response_model=List[BarberResponse])
+async def get_shop_barbers(
+    shop_id: UUID,
+    db: AsyncSession = Depends(get_db)
+) -> List[BarberResponse]:
+    barbers = await barber_service.get_by_shop_id(db, shop_id)
+    return [BarberResponse.from_orm(barber) for barber in barbers]
+
+# Avoid: Complex inline logic
+@router.get("/complex-endpoint")
+async def complex_endpoint():
+    # Don't put business logic here - use services
+    pass
+```
+
+### Database Patterns
+- Use async SQLAlchemy with proper session management
+- Keep models simple - just database representation
+- Use services for complex queries and business logic
+- Always use UUIDs for primary keys: `id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)`
+
+```python
+# Good: Simple model
+class Shop(Base):
+    __tablename__ = "shops"
+    
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    name: Mapped[str] = mapped_column(String(255))
+    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    
+    # Relationships
+    barbers: Mapped[List["Barber"]] = relationship(back_populates="shop")
+```
+
+### Error Handling
+- Use FastAPI's HTTPException for API errors
+- Create custom exception classes for domain errors
+- Always include meaningful error messages
+- Log errors but don't expose internal details to clients
+
+```python
+# Good error handling
+from fastapi import HTTPException, status
+
+if not barber:
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Barber with id {barber_id} not found"
+    )
+```
+
+### Business Logic
+- Keep business logic in service classes, not in route handlers
+- Services should be async and use dependency injection
+- Validate business rules in services, not models
+- Use clear method names that describe what they do
+
+```python
+class BookingService:
+    async def create_appointment(
+        self, 
+        db: AsyncSession,
+        appointment_data: AppointmentCreate
+    ) -> Appointment:
+        # 1. Validate barber availability
+        # 2. Check for conflicts
+        # 3. Calculate pricing
+        # 4. Create appointment
+        pass
+```
+
+### API Design Rules
+- Use RESTful patterns consistently
+- Nest resources logically: `/shops/{shop_id}/barbers`
+- Use proper HTTP status codes
+- Include pagination for list endpoints
+- Use query parameters for filtering/sorting
+
+```python
+# Good: RESTful design
+@router.get("/shops/{shop_id}/appointments")  # Get shop's appointments
+@router.post("/appointments")                 # Create new appointment
+@router.get("/appointments/{appointment_id}") # Get specific appointment
+@router.patch("/appointments/{appointment_id}") # Update appointment
+@router.delete("/appointments/{appointment_id}") # Cancel appointment
+```
+
+### Validation & Schemas
+- Use Pydantic for request/response validation
+- Create separate schemas for Create/Update/Response
+- Validate business rules in services, not schemas
+- Use descriptive field names and add examples
+
+```python
+class AppointmentCreate(BaseModel):
+    barber_id: UUID
+    customer_id: UUID
+    service_id: UUID
+    appointment_date: datetime
+    notes: Optional[str] = None
+    
+    class Config:
+        json_encoders = {
+            datetime: lambda v: v.isoformat()
+        }
+```
+
+### Testing Approach
+- Write tests for business logic, not just API endpoints
+- Use fixtures for common test data
+- Test happy path and error conditions
+- Keep tests simple and focused
+
+```python
+async def test_create_appointment_success():
+    # Arrange
+    appointment_data = AppointmentCreate(...)
+    
+    # Act
+    appointment = await booking_service.create_appointment(db, appointment_data)
+    
+    # Assert
+    assert appointment.barber_id == appointment_data.barber_id
+```
+
+## Key Implementation Notes
+
+### Database Connection
+- Use connection pooling with asyncpg
+- Implement proper session management with FastAPI dependencies
+- Use database transactions for multi-step operations
+
+### Authentication
+- JWT tokens with reasonable expiration times
+- Role-based access: shop_owner, barber, customer
+- Protect endpoints based on user roles
+
+### Data Handling
+- All monetary values in cents (integers)
+- Store dates in UTC, convert for display
+- Use UUIDs for all primary keys
+- Handle timezones properly for appointments
+
+### Performance
+- Use database indexes on frequently queried fields
+- Implement proper pagination
+- Consider caching for read-heavy data (shop info, services)
+- Use async/await consistently
+
+## Common Pitfalls to Avoid
+- Don't put business logic in route handlers
+- Don't use synchronous database operations
+- Don't expose internal error details to API clients
+- Don't forget to validate user permissions
+- Don't store sensitive data in logs
+- Don't ignore timezone handling
+- Don't create endpoints without proper error handling
+
+## Dependencies to Include
+```toml
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.104.0"
+uvicorn = {extras = ["standard"], version = "^0.24.0"}
+sqlalchemy = "^2.0.0"
+asyncpg = "^0.29.0"
+pydantic = {extras = ["email"], version = "^2.0.0"}
+pydantic-settings = "^2.0.0"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-multipart = "^0.0.6"
+pytest = "^7.4.0"
+pytest-asyncio = "^0.21.0"
+httpx = "^0.25.0"
+```
+
+## Remember
+- Start simple, add complexity only when needed
+- Write code that your future self will understand
+- Test the critical business logic thoroughly
+- Keep the API consistent and predictable
+- Document important business rules in code comments

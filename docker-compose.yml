@@ -1,0 +1,12 @@
+services:
+  postgres:
+    image: nickblah/postgis:13-bullseye-postgis-3
+    command: postgres -c fsync=off
+    ports:
+      - 5432:5432
+    environment:
+      LC_ALL: C.UTF-8
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DBNAME: postgres
+    volumes:
+      - ./init:/docker-entrypoint-initdb.d

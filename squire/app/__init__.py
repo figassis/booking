@@ -1,0 +1,1 @@
+# This file marks the squire package. The FastAPI app structure will be scaffolded in this directory. 
